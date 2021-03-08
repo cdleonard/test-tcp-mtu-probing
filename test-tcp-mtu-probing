@@ -108,11 +108,12 @@ main()
     sleep 5
     echo "enter lo-mtu state"
     ip netns exec ns_middle ip link set veth_server mtu 3000
-    echo "sleep 1"
-    sleep 1
+    echo "sleep 5"
+    sleep 5
     echo "restore hi-mtu state:"
-    ip netns exec ns_middle ip link set veth_server mtu 9200
-    sleep 1
+    ip netns exec ns_middle ip link set veth_server mtu 9100
+    echo "sleep 5"
+    sleep 5
 
     was_ok=0
     max_iter=300
@@ -127,6 +128,8 @@ main()
         echo "mss=$mss pmtu=$pmtu"
         if [[ mss -gt 9000 ]]; then
             echo "ok - mss back over 9000"
+            echo "sleep 5"
+            sleep 5
             was_ok=1
             break
         fi
