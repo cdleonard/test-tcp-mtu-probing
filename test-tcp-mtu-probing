@@ -84,6 +84,7 @@ main()
 
     ip netns exec ns_server iperf \
             --bandwidth 1024k \
+            --len 128k \
             --server \
             --bind 23.0.0.3 \
             --interval 1 \
@@ -92,6 +93,7 @@ main()
     sleep 1
     ip netns exec ns_client iperf \
             --bandwidth 1024k \
+            --len 128k \
             --client 23.0.0.3 \
             --interval 1 \
             --time 1000000 \
