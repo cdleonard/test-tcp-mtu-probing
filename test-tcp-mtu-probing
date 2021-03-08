@@ -1,0 +1,142 @@
+#! /bin/bash -e
+
+clean_netns()
+{
+    if ip netns list | grep -q "$1"; then
+        ip netns del "$1"
+    fi
+}
+
+# If $pid is set then kill wait unset
+clean_bgpid()
+{
+    local pid=$1
+    if [[ -n ${!pid} ]]; then
+        kill "${!pid}"
+        wait "${!pid}" || true
+        unset "$pid"
+    fi
+}
+
+clean()
+{
+    clean_bgpid iperf_client_pid
+    clean_bgpid iperf_server_pid
+    clean_bgpid watch_ss_client_pid
+    clean_netns ns_client
+    clean_netns ns_middle
+    clean_netns ns_server
+    if [[ -n $tmpdir ]]; then
+        rm -rf "$tmpdir"
+        unset tmpdir
+    fi
+}
+
+main()
+{
+    # Can be set externally:
+    CLEAN=${CLEAN:-1}
+
+    clean
+    tmpdir=$(mktemp -d)
+    if [[ $CLEAN == 1 ]]; then
+        trap clean EXIT
+    fi
+
+    ip netns add ns_client
+    ip netns add ns_middle
+    ip netns add ns_server
+
+    ip netns exec ns_client ip link add veth_middle type veth peer name veth_client netns ns_middle
+    ip netns exec ns_client ip addr add dev veth_middle 12.0.0.1/24
+    ip netns exec ns_client ip link set veth_middle up mtu 9200
+    ip netns exec ns_middle ip addr add dev veth_client 12.0.0.2/24
+    ip netns exec ns_middle ip link set veth_client up mtu 9200
+
+    ip netns exec ns_server ip link add veth_middle type veth peer name veth_server netns ns_middle
+    ip netns exec ns_server ip addr add dev veth_middle 23.0.0.3/24
+    ip netns exec ns_server ip link set veth_middle up mtu 9200
+    ip netns exec ns_middle ip addr add dev veth_server 23.0.0.2/24
+    ip netns exec ns_middle ip link set veth_server up mtu 9200
+
+    ip netns exec ns_client ip route add 23.0.0.0/24 via 12.0.0.2
+    ip netns exec ns_server ip route add 12.0.0.0/24 via 23.0.0.2
+    ip netns exec ns_middle sysctl -w net.ipv4.ip_forward=1
+
+    if false; then
+        if ip netns exec ns_client ping -c3 23.0.0.3; then
+            echo "ok - can ping from client to server"
+        else
+            echo "not ok - fail to ping from client to server"
+        fi
+    fi
+
+    ip netns exec ns_client sysctl -w net.ipv4.tcp_mtu_probing=2
+    ip netns exec ns_client sysctl -w net.ipv4.tcp_probe_interval=5
+    sh -c 'echo 5 > /proc/sys/net/ipv4/route/mtu_expires'
+    ip netns exec ns_client sysctl \
+            net.ipv4.ip_no_pmtu_disc \
+            net.ipv4.tcp_mtu_probing \
+            net.ipv4.tcp_mtu_probe_floor \
+            net.ipv4.tcp_probe_interval \
+            net.ipv4.tcp_probe_threshold
+    echo "/proc/sys/net/ipv4/route/mtu_expires: $(cat /proc/sys/net/ipv4/route/mtu_expires)"
+
+    ip netns exec ns_server iperf \
+            --bandwidth 1024k \
+            --server \
+            --bind 23.0.0.3 \
+            --interval 1 \
+            &> "$tmpdir/iperf_server.log" &
+    iperf_server_pid=$!
+    sleep 1
+    ip netns exec ns_client iperf \
+            --bandwidth 1024k \
+            --client 23.0.0.3 \
+            --interval 1 \
+            --time 1000000 \
+            --print_mss \
+            &> "$tmpdir/iperf_client.log" &
+    iperf_client_pid=$!
+
+    ip netns exec ns_client bash -c "while true; do ss --oneline --no-header --tcp --info | tee -a '$tmpdir/watch_ss_client.log'; sleep 0.3; done" &
+    watch_ss_client_pid=$!
+
+    echo "sleep 5"
+    sleep 5
+    echo "enter lo-mtu state"
+    ip netns exec ns_middle ip link set veth_server mtu 3000
+    echo "sleep 1"
+    sleep 1
+    echo "restore hi-mtu state:"
+    ip netns exec ns_middle ip link set veth_server mtu 9200
+    sleep 1
+
+    was_ok=0
+    max_iter=300
+    for ((iter = 0; iter < max_iter; ++iter)); do
+        items=$(tail -n1 "$tmpdir/watch_ss_client.log" | sed -ne "s/.* mss:\([0-9]\+\) pmtu:\([0-9]\+\).*/\1 \2/pg")
+        echo "item: $items"
+        if [[ -z $items ]]; then
+            echo "failed to parse watch_ss_client.log"
+            exit 2
+        fi
+        read mss pmtu < <(echo "$items")
+        echo "mss=$mss pmtu=$pmtu"
+        if [[ mss -gt 9000 ]]; then
+            echo "ok - mss back over 9000"
+            was_ok=1
+            break
+        fi
+        sleep 0.3
+    done
+    if [[ $was_ok != 1 ]]; then
+        echo "not ok - mss still under 9000"
+    fi
+
+    clean_bgpid iperf_server_pid
+    clean_bgpid iperf_client_pid
+    clean_bgpid watch_ss_client_pid
+}
+
+main "$@"
