@@ -79,6 +79,8 @@ main()
     TCP_PROBE_INTERVAL=${TCP_MTU_PROBE_INTERVAL:-5}
     MTU_VALUE_LO=${MTU_VALUE_LO:-3000}
     MTU_VALUE_HI=${MTU_VALUE_HI:-9200}
+    IPERF_BANDWIDTH=${IPERF_BANDWIDTH:-1024k}
+    IPERF_LEN=${IPERF_LEN:-128k}
 
     clean
     tmpdir=$(mktemp -d -t "test-tcp-mtu-probing-XXXXX")
@@ -137,8 +139,8 @@ main()
     echo "/proc/sys/net/ipv4/route/mtu_expires: $(cat /proc/sys/net/ipv4/route/mtu_expires)"
 
     ip netns exec ns_server iperf \
-            --bandwidth 1024k \
-            --len 128k \
+            --bandwidth $IPERF_BANDWIDTH \
+            --len $IPERF_LEN \
             --server \
             --bind 23.0.0.3 \
             --interval 1 \
@@ -146,8 +148,8 @@ main()
     iperf_server_pid=$!
     sleep 1
     ip netns exec ns_client iperf \
-            --bandwidth 1024k \
-            --len 128k \
+            --bandwidth $IPERF_BANDWIDTH \
+            --len $IPERF_LEN \
             --client 23.0.0.3 \
             --interval 1 \
             --time 1000000 \
