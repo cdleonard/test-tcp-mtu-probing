@@ -81,7 +81,8 @@ main()
     MTU_VALUE_HI=${MTU_VALUE_HI:-9200}
 
     clean
-    tmpdir=$(mktemp -d)
+    tmpdir=$(mktemp -d -t "test-tcp-mtu-probing-XXXXX")
+    echo "TMPDIR: $tmpdir"
     if [[ $CLEAN == 1 ]]; then
         trap clean EXIT
     fi
