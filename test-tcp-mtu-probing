@@ -23,6 +23,7 @@ clean()
     clean_bgpid iperf_client_pid
     clean_bgpid iperf_server_pid
     clean_bgpid watch_ss_client_pid
+    clean_bgpid tcpdump_pid
     clean_netns ns_client
     clean_netns ns_middle
     clean_netns ns_server
@@ -36,6 +37,8 @@ main()
 {
     # Can be set externally:
     CLEAN=${CLEAN:-1}
+    RUN_TCPDUMP=${RUN_TCPDUMP:-0}
+    ICMP_BLACKHOLE=${ICMP_BLACKHOLE:-0}
     IPV4_MTU_EXPIRES=${IPV4_MTU_EXPIRES:-5}
     TCP_MTU_PROBING=${TCP_MTU_PROBING:-0}
     TCP_PROBE_INTERVAL=${TCP_MTU_PROBE_INTERVAL:-5}
@@ -65,6 +68,16 @@ main()
     ip netns exec ns_client ip route add 23.0.0.0/24 via 12.0.0.2
     ip netns exec ns_server ip route add 12.0.0.0/24 via 23.0.0.2
     ip netns exec ns_middle sysctl -w net.ipv4.ip_forward=1
+
+    if [[ $ICMP_BLACKHOLE == 1 ]]; then
+        ip netns exec ns_middle iptables -A INPUT -p icmp -j REJECT
+        ip netns exec ns_middle iptables -A OUTPUT -p icmp -j REJECT
+    fi
+
+    if [[ $RUN_TCPDUMP == 1 ]]; then
+        ip netns exec ns_client tcpdump -t -vvv -lni veth_middle icmp &
+        tcpdump_client=$!
+    fi
 
     if false; then
         if ip netns exec ns_client ping -c3 23.0.0.3; then
@@ -145,6 +158,7 @@ main()
     clean_bgpid iperf_server_pid
     clean_bgpid iperf_client_pid
     clean_bgpid watch_ss_client_pid
+    clean_bgpid tcpdump_pid
 }
 
 main "$@"
