@@ -36,6 +36,9 @@ main()
 {
     # Can be set externally:
     CLEAN=${CLEAN:-1}
+    IPV4_MTU_EXPIRES=${IPV4_MTU_EXPIRES:-5}
+    TCP_MTU_PROBING=${TCP_MTU_PROBING:-0}
+    TCP_PROBE_INTERVAL=${TCP_MTU_PROBE_INTERVAL:-5}
 
     clean
     tmpdir=$(mktemp -d)
@@ -71,9 +74,9 @@ main()
         fi
     fi
 
-    ip netns exec ns_client sysctl -w net.ipv4.tcp_mtu_probing=2
-    ip netns exec ns_client sysctl -w net.ipv4.tcp_probe_interval=5
-    sh -c 'echo 5 > /proc/sys/net/ipv4/route/mtu_expires'
+    ip netns exec ns_client sysctl -w net.ipv4.tcp_mtu_probing=$TCP_MTU_PROBING
+    ip netns exec ns_client sysctl -w net.ipv4.tcp_probe_interval=$TCP_PROBE_INTERVAL
+    sh -c "echo '$IPV4_MTU_EXPIRES' > /proc/sys/net/ipv4/route/mtu_expires"
     ip netns exec ns_client sysctl \
             net.ipv4.ip_no_pmtu_disc \
             net.ipv4.tcp_mtu_probing \
