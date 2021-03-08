@@ -64,7 +64,7 @@ check_mss_hi()
 {
     local mss
     mss=$(read_last_ss_mss)
-    echo "check mss $mss increases to hi mtu $MTU_VALUE_LO"
+    echo "check mss $mss increases to hi mtu $MTU_VALUE_HI"
     [[ $mss -gt $((MTU_VALUE_HI - 100)) ]]
 }
 
