@@ -133,9 +133,9 @@ main()
     ip netns exec ns_client sysctl \
             net.ipv4.ip_no_pmtu_disc \
             net.ipv4.tcp_mtu_probing \
-            net.ipv4.tcp_mtu_probe_floor \
             net.ipv4.tcp_probe_interval \
             net.ipv4.tcp_probe_threshold
+    ip netns exec ns_client sysctl net.ipv4.tcp_mtu_probe_floor || true
     echo "/proc/sys/net/ipv4/route/mtu_expires: $(cat /proc/sys/net/ipv4/route/mtu_expires)"
 
     ip netns exec ns_server iperf \
