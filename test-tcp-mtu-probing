@@ -157,7 +157,7 @@ main()
             &> "$tmpdir/iperf_client.log" &
     iperf_client_pid=$!
 
-    ip netns exec ns_client bash -c "while true; do ss --oneline --no-header --tcp --info | tee -a '$tmpdir/watch_ss_client.log'; sleep 1; done" &
+    ip netns exec ns_client bash -c "while true; do ss --no-header --tcp --info | tee -a '$tmpdir/watch_ss_client.log'; sleep 1; done" &
     watch_ss_client_pid=$!
 
     if wait_loop check_mss_hi; then
