@@ -35,7 +35,7 @@ clean()
 
 wait_loop()
 {
-    local max_iter=10
+    local max_iter=$TIMEOUT_SEC
     local sleep_interval=1
     local cmd=("$@")
     for ((iter = 0; iter < max_iter; ++iter)); do
@@ -72,6 +72,8 @@ main()
 {
     # Can be set externally:
     CLEAN=${CLEAN:-1}
+    # Timeout in seconds (default 10)
+    TIMEOUT_SEC=${TIMEOUT_SEC}
     RUN_TCPDUMP=${RUN_TCPDUMP:-0}
     ICMP_BLACKHOLE=${ICMP_BLACKHOLE:-0}
     IPV4_MTU_EXPIRES=${IPV4_MTU_EXPIRES:-5}
