@@ -74,16 +74,25 @@ main()
     CLEAN=${CLEAN:-1}
     # Timeout in seconds (default 10)
     TIMEOUT_SEC=${TIMEOUT_SEC}
+    # If set to 1 then run tcpdump (default 0)
     RUN_TCPDUMP=${RUN_TCPDUMP:-0}
+    # If set to 1 then blackhole ICMPs
     ICMP_BLACKHOLE=${ICMP_BLACKHOLE:-0}
+    # Override /proc/sys/net/ipv4/route/mtu_expires
     IPV4_MTU_EXPIRES=${IPV4_MTU_EXPIRES:-5}
+    # Override sysctl net.ipv4.tcp_mtu_probing
     TCP_MTU_PROBING=${TCP_MTU_PROBING:-0}
+    # Override sysctl net.ipv4.tcp_probe_interval
     TCP_PROBE_INTERVAL=${TCP_MTU_PROBE_INTERVAL:-5}
+    # Low value for MTU test
     MTU_VALUE_LO=${MTU_VALUE_LO:-3000}
+    # High value for MTU test
     MTU_VALUE_HI=${MTU_VALUE_HI:-9200}
+    # IPERF --bandwith argument
     IPERF_BANDWIDTH=${IPERF_BANDWIDTH:-1024k}
     IPERF_SERVER_BANDWIDTH=${IPERF_SERVER_BANDWIDTH:-$IPERF_BANDWIDTH}
     IPERF_CLIENT_BANDWIDTH=${IPERF_CLIENT_BANDWIDTH:-$IPERF_BANDWIDTH}
+    # IPERF --len argument
     IPERF_LEN=${IPERF_LEN:-128k}
 
     clean
