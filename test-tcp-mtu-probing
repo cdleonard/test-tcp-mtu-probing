@@ -73,7 +73,7 @@ main()
     # Can be set externally:
     CLEAN=${CLEAN:-1}
     # Timeout in seconds (default 10)
-    TIMEOUT_SEC=${TIMEOUT_SEC}
+    TIMEOUT_SEC=${TIMEOUT_SEC:-10}
     # If set to 1 then run tcpdump (default 0)
     RUN_TCPDUMP=${RUN_TCPDUMP:-0}
     # If set to 1 then blackhole ICMPs
