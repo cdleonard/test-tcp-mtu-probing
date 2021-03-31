@@ -49,7 +49,7 @@ wait_loop()
 
 read_last_ss_mss()
 {
-    tail -n1 "$tmpdir/watch_ss_client.log" | sed -ne "s/.* mss:\([0-9]\+\) .*/\1/pg"
+    tail -n1 "$LOG_DIR/watch_ss_client.log" | sed -ne "s/.* mss:\([0-9]\+\) .*/\1/pg"
 }
 
 check_mss_lo()
@@ -96,10 +96,16 @@ main()
     IPERF_LEN=${IPERF_LEN:-128k}
 
     clean
-    tmpdir=$(mktemp -d -t "test-tcp-mtu-probing-XXXXX")
-    echo "TMPDIR: $tmpdir"
     if [[ $CLEAN == 1 ]]; then
         trap clean EXIT
+    fi
+    if [[ -z $LOG_DIR ]]; then
+        tmpdir=$(mktemp -d -t "test-tcp-mtu-probing-XXXXX")
+        LOG_DIR=$tmpdir
+        echo "Use temporary LOG_DIR: $LOG_DIR" >&2
+    else
+        mkdir -p "$LOG_DIR"
+        echo "Use provided LOG_DIR: $LOG_DIR" >&2
     fi
 
     ip netns add ns_client
@@ -157,7 +163,7 @@ main()
             --server \
             --bind 23.0.0.3 \
             --interval 1 \
-            &> "$tmpdir/iperf_server.log" &
+            &> "$LOG_DIR/iperf_server.log" &
     iperf_server_pid=$!
     sleep 1
     ip netns exec ns_client iperf \
@@ -167,10 +173,10 @@ main()
             --interval 1 \
             --time 1000000 \
             --print_mss \
-            &> "$tmpdir/iperf_client.log" &
+            &> "$LOG_DIR/iperf_client.log" &
     iperf_client_pid=$!
 
-    ip netns exec ns_client bash -c "while true; do ss --no-header --tcp --info | tee -a '$tmpdir/watch_ss_client.log'; sleep 1; done" &
+    ip netns exec ns_client bash -c "while true; do ss --no-header --tcp --info | tee -a '$LOG_DIR/watch_ss_client.log'; sleep 1; done" &
     watch_ss_client_pid=$!
 
     if wait_loop check_mss_hi; then
