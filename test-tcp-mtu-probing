@@ -141,8 +141,8 @@ main()
     fi
 
     if [[ $RUN_TCPDUMP == 1 ]]; then
-        ip netns exec ns_client tcpdump -t -vvv -lni veth_middle icmp &
-        tcpdump_client=$!
+        ip netns exec ns_server tcpdump -vvn -i veth_middle -w $LOG_DIR/capture.pcap &
+        tcpdump_pid=$!
     fi
 
     if false; then
