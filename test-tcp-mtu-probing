@@ -94,6 +94,13 @@ main()
     IPERF_CLIENT_BANDWIDTH=${IPERF_CLIENT_BANDWIDTH:-$IPERF_BANDWIDTH}
     # IPERF --len argument
     IPERF_LEN=${IPERF_LEN:-128k}
+    # IPERF --window argument (no custom default)
+    IPERF_WINDOW=${IPERF_WINDOW:-}
+
+    local IPERF_ARGS=()
+    if [[ -n $IPERF_WINDOW ]]; then
+        IPERF_ARGS+=(--window "$IPERF_WINDOW")
+    fi
 
     clean
     if [[ $CLEAN == 1 ]]; then
@@ -163,6 +170,7 @@ main()
             --server \
             --bind 23.0.0.3 \
             --interval 1 \
+            "${IPERF_ARGS[@]}" \
             &> "$LOG_DIR/iperf_server.log" &
     iperf_server_pid=$!
     sleep 1
@@ -173,6 +181,7 @@ main()
             --interval 1 \
             --time 1000000 \
             --print_mss \
+            "${IPERF_ARGS[@]}" \
             &> "$LOG_DIR/iperf_client.log" &
     iperf_client_pid=$!
 
