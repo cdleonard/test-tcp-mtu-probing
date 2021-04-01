@@ -23,7 +23,8 @@ clean()
     clean_bgpid iperf_client_pid
     clean_bgpid iperf_server_pid
     clean_bgpid watch_ss_client_pid
-    clean_bgpid tcpdump_pid
+    clean_bgpid tcpdump_client_pid
+    clean_bgpid tcpdump_server_pid
     clean_netns ns_client
     clean_netns ns_middle
     clean_netns ns_server
@@ -144,8 +145,10 @@ main()
     fi
 
     if [[ $RUN_TCPDUMP == 1 ]]; then
-        ip netns exec ns_server tcpdump -vvn -i veth_middle -w $LOG_DIR/capture.pcap &
-        tcpdump_pid=$!
+        ip netns exec ns_client tcpdump -vvn -i veth_middle -w $LOG_DIR/capture_client.pcap &
+        tcpdump_client_pid=$!
+        ip netns exec ns_server tcpdump -vvn -i veth_middle -w $LOG_DIR/capture_server.pcap &
+        tcpdump_server_pid=$!
     fi
 
     if false; then
@@ -221,7 +224,8 @@ main()
     clean_bgpid iperf_server_pid
     clean_bgpid iperf_client_pid
     clean_bgpid watch_ss_client_pid
-    clean_bgpid tcpdump_pid
+    clean_bgpid tcpdump_client_pid
+    clean_bgpid tcpdump_server_pid
 }
 
 main "$@"
