@@ -219,13 +219,9 @@ main()
         echo "ok - reached restored hi mss"
     else
         echo "not ok - failed to reach restored hi mss"
+        exit 1
     fi
-
-    clean_bgpid iperf_server_pid
-    clean_bgpid iperf_client_pid
-    clean_bgpid watch_ss_client_pid
-    clean_bgpid tcpdump_client_pid
-    clean_bgpid tcpdump_server_pid
+    exit 0
 }
 
 main "$@"
