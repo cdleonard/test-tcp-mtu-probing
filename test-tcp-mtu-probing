@@ -216,9 +216,9 @@ main()
     sleep 3
 
     if wait_loop check_mss_hi; then
-        echo "ok - reached high mss"
+        echo "ok - reached restored hi mss"
     else
-        echo "not ok - failed to reach high mss"
+        echo "not ok - failed to reach restored hi mss"
     fi
 
     clean_bgpid iperf_server_pid
