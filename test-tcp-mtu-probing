@@ -122,15 +122,15 @@ main()
 
     ip netns exec ns_client ip link add veth_middle type veth peer name veth_client netns ns_middle
     ip netns exec ns_client ip addr add dev veth_middle 12.0.0.1/24
-    ip netns exec ns_client ip link set veth_middle up mtu $MTU_VALUE_HI
+    ip netns exec ns_client ip link set veth_middle up mtu "$MTU_VALUE_HI"
     ip netns exec ns_middle ip addr add dev veth_client 12.0.0.2/24
-    ip netns exec ns_middle ip link set veth_client up mtu $MTU_VALUE_HI
+    ip netns exec ns_middle ip link set veth_client up mtu "$MTU_VALUE_HI"
 
     ip netns exec ns_server ip link add veth_middle type veth peer name veth_server netns ns_middle
     ip netns exec ns_server ip addr add dev veth_middle 23.0.0.3/24
-    ip netns exec ns_server ip link set veth_middle up mtu $MTU_VALUE_HI
+    ip netns exec ns_server ip link set veth_middle up mtu "$MTU_VALUE_HI"
     ip netns exec ns_middle ip addr add dev veth_server 23.0.0.2/24
-    ip netns exec ns_middle ip link set veth_server up mtu $MTU_VALUE_HI
+    ip netns exec ns_middle ip link set veth_server up mtu "$MTU_VALUE_HI"
 
     ip netns exec ns_client ip route add 23.0.0.0/24 via 12.0.0.2
     ip netns exec ns_server ip route add 12.0.0.0/24 via 23.0.0.2
@@ -145,9 +145,9 @@ main()
     fi
 
     if [[ $RUN_TCPDUMP == 1 ]]; then
-        ip netns exec ns_client tcpdump -vvn -i veth_middle -w $LOG_DIR/capture_client.pcap &
+        ip netns exec ns_client tcpdump -vvn -i veth_middle -w "$LOG_DIR/capture_client.pcap" &
         tcpdump_client_pid=$!
-        ip netns exec ns_server tcpdump -vvn -i veth_middle -w $LOG_DIR/capture_server.pcap &
+        ip netns exec ns_server tcpdump -vvn -i veth_middle -w "$LOG_DIR/capture_server.pcap" &
         tcpdump_server_pid=$!
     fi
 
@@ -159,8 +159,8 @@ main()
         fi
     fi
 
-    ip netns exec ns_client sysctl -w net.ipv4.tcp_mtu_probing=$TCP_MTU_PROBING
-    ip netns exec ns_client sysctl -w net.ipv4.tcp_probe_interval=$TCP_PROBE_INTERVAL
+    ip netns exec ns_client sysctl -w net.ipv4.tcp_mtu_probing="$TCP_MTU_PROBING"
+    ip netns exec ns_client sysctl -w net.ipv4.tcp_probe_interval="$TCP_PROBE_INTERVAL"
     sh -c "echo '$IPV4_MTU_EXPIRES' > /proc/sys/net/ipv4/route/mtu_expires"
     ip netns exec ns_client sysctl \
             net.ipv4.ip_no_pmtu_disc \
@@ -172,7 +172,7 @@ main()
 
     ip netns exec ns_server iperf \
             --bandwidth "$IPERF_SERVER_BANDWIDTH" \
-            --len $IPERF_LEN \
+            --len "$IPERF_LEN" \
             --server \
             --bind 23.0.0.3 \
             --interval 1 \
@@ -182,7 +182,7 @@ main()
     sleep 1
     ip netns exec ns_client iperf \
             --bandwidth "$IPERF_CLIENT_BANDWIDTH" \
-            --len $IPERF_LEN \
+            --len "$IPERF_LEN" \
             --client 23.0.0.3 \
             --interval 1 \
             --time 1000000 \
