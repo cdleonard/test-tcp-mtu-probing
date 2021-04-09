@@ -97,13 +97,24 @@ main()
     IPERF_CLIENT_BANDWIDTH=${IPERF_CLIENT_BANDWIDTH:-$IPERF_BANDWIDTH}
     # IPERF --len argument
     IPERF_LEN=${IPERF_LEN:-128k}
-    # IPERF --window argument (no custom default)
+    IPERF_SERVER_LEN=${IPERF_SERVER_LEN:-$IPERF_LEN}
+    IPERF_CLIENT_LEN=${IPERF_CLIENT_LEN:-$IPERF_LEN}
+    # iperf --window argument (no custom default)
     IPERF_WINDOW=${IPERF_WINDOW:-}
+    IPERF_SERVER_WINDOW=${IPERF_SERVER_WINDOW:-$IPERF_WINDOW}
+    IPERF_CLIENT_WINDOW=${IPERF_CLIENT_WINDOW:-$IPERF_WINDOW}
 
-    local IPERF_ARGS=()
-    if [[ -n $IPERF_WINDOW ]]; then
-        IPERF_ARGS+=(--window "$IPERF_WINDOW")
-    fi
+    # build iperf arguments
+    local IPERF_COMMON_ARGS=(--interval 1)
+    local IPERF_CLIENT_ARGS=()
+    local IPERF_SERVER_ARGS=()
+
+    [[ -n $IPERF_CLIENT_BANDWIDTH ]] && IPERF_CLIENT_ARGS+=(--bandwidth "$IPERF_CLIENT_BANDWIDTH")
+    [[ -n $IPERF_SERVER_BANDWIDTH ]] && IPERF_SERVER_ARGS+=(--bandwidth "$IPERF_SERVER_BANDWIDTH")
+    [[ -n $IPERF_CLIENT_WINDOW ]] && IPERF_CLIENT_ARGS+=(--window "$IPERF_CLIENT_WINDOW")
+    [[ -n $IPERF_SERVER_WINDOW ]] && IPERF_SERVER_ARGS+=(--window "$IPERF_SERVER_WINDOW")
+    [[ -n $IPERF_CLIENT_LEN ]] && IPERF_CLIENT_ARGS+=(--len "$IPERF_CLIENT_LEN")
+    [[ -n $IPERF_SERVER_LEN ]] && IPERF_SERVER_ARGS+=(--len "$IPERF_SERVER_LEN")
 
     clean
     if [[ $CLEAN == 1 ]]; then
@@ -173,25 +184,28 @@ main()
     ip netns exec ns_client sysctl net.ipv4.tcp_mtu_probe_floor || true
     echo "/proc/sys/net/ipv4/route/mtu_expires: $(cat /proc/sys/net/ipv4/route/mtu_expires)"
 
-    ip netns exec ns_server iperf \
-            --bandwidth "$IPERF_SERVER_BANDWIDTH" \
-            --len "$IPERF_LEN" \
-            --server \
-            --bind 23.0.0.3 \
-            --interval 1 \
-            "${IPERF_ARGS[@]}" \
-            &> "$LOG_DIR/iperf_server.log" &
+    IPERF_SERVER_CMD=(
+        iperf
+        --server
+        --bind 23.0.0.3
+        "${IPERF_COMMON_ARGS[@]}"
+        "${IPERF_SERVER_ARGS[@]}"
+    )
+    echo "RUN: ${IPERF_SERVER_CMD[@]}"
+    ip netns exec ns_server "${IPERF_SERVER_CMD[@]}" &> "$LOG_DIR/iperf_server.log" &
     iperf_server_pid=$!
     sleep 1
-    ip netns exec ns_client iperf \
-            --bandwidth "$IPERF_CLIENT_BANDWIDTH" \
-            --len "$IPERF_LEN" \
-            --client 23.0.0.3 \
-            --interval 1 \
-            --time 1000000 \
-            --print_mss \
-            "${IPERF_ARGS[@]}" \
-            &> "$LOG_DIR/iperf_client.log" &
+
+    IPERF_CLIENT_CMD=(
+        iperf
+        --client 23.0.0.3
+        --time 1000000
+        --print_mss
+        "${IPERF_COMMON_ARGS[@]}"
+        "${IPERF_CLIENT_ARGS[@]}"
+    )
+    echo "RUN: ${IPERF_CLIENT_CMD[@]}"
+    ip netns exec ns_client "${IPERF_CLIENT_CMD[@]}" &> "$LOG_DIR/iperf_client.log" &
     iperf_client_pid=$!
 
     SS_ARGS="--no-header --tcp --info --memory"
