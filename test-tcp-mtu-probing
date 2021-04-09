@@ -23,8 +23,10 @@ clean()
     clean_bgpid iperf_client_pid
     clean_bgpid iperf_server_pid
     clean_bgpid watch_ss_client_pid
+    clean_bgpid watch_ss_server_pid
     clean_bgpid tcpdump_client_pid
     clean_bgpid tcpdump_server_pid
+    clean_bgpid tail_pid
     clean_netns ns_client
     clean_netns ns_middle
     clean_netns ns_server
@@ -192,8 +194,16 @@ main()
             &> "$LOG_DIR/iperf_client.log" &
     iperf_client_pid=$!
 
-    ip netns exec ns_client bash -c "while true; do ss --no-header --tcp --info | tee -a '$LOG_DIR/watch_ss_client.log'; sleep 1; done" &
+    SS_ARGS="--no-header --tcp --info --memory"
+    ip netns exec ns_client bash -c "while true; do ss $SS_ARGS &>> '$LOG_DIR/watch_ss_client.log'; sleep 1; done" &
     watch_ss_client_pid=$!
+    ip netns exec ns_server bash -c "while true; do ss $SS_ARGS &>> '$LOG_DIR/watch_ss_server.log'; sleep 1; done" &
+    watch_ss_server_pid=$!
+
+    tail -F \
+            "$LOG_DIR/watch_ss_client.log" \
+            "$LOG_DIR/watch_ss_server.log"  &
+    tail_pid=$!
 
     if wait_loop check_mss_hi; then
         echo "ok - reached hi mss"
