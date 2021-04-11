@@ -191,7 +191,7 @@ main()
         "${IPERF_COMMON_ARGS[@]}"
         "${IPERF_SERVER_ARGS[@]}"
     )
-    echo "RUN: ${IPERF_SERVER_CMD[@]}"
+    echo "RUN: ${IPERF_SERVER_CMD[*]}"
     ip netns exec ns_server "${IPERF_SERVER_CMD[@]}" &> "$LOG_DIR/iperf_server.log" &
     iperf_server_pid=$!
     sleep 1
@@ -204,7 +204,7 @@ main()
         "${IPERF_COMMON_ARGS[@]}"
         "${IPERF_CLIENT_ARGS[@]}"
     )
-    echo "RUN: ${IPERF_CLIENT_CMD[@]}"
+    echo "RUN: ${IPERF_CLIENT_CMD[*]}"
     ip netns exec ns_client "${IPERF_CLIENT_CMD[@]}" &> "$LOG_DIR/iperf_client.log" &
     iperf_client_pid=$!
 
