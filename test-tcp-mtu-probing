@@ -224,10 +224,8 @@ main()
     ip netns exec ns_server bash -c "while true; do ss $SS_ARGS &>> '$LOG_DIR/watch_ss_server.log'; sleep 1; done" &
     watch_ss_server_pid=$!
 
-    tail -F \
-            "$LOG_DIR/watch_ss_client.log" \
-            "$LOG_DIR/watch_ss_server.log"  &
-    tail_pid=$!
+    #tail -F "$LOG_DIR/watch_ss_client.log" "$LOG_DIR/watch_ss_server.log"  &
+    #tail_pid=$!
 
     if wait_loop check_mss_hi; then
         echo "ok - reached hi mss"
