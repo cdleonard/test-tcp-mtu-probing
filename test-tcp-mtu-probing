@@ -50,25 +50,35 @@ wait_loop()
     return 2
 }
 
-read_last_ss_mss()
+# extra field from ss --info output
+extract_ss_info_field()
 {
-    tail -n1 "$LOG_DIR/watch_ss_client.log" | sed -ne "s/.* mss:\([0-9]\+\) .*/\1/pg"
+    sed -ne "s/.* ${1}:\([0-9]\+\) .*/\1/pg"
+}
+
+# Assigned to the ss_mss and ss_reordering variables
+parse_current_ss_client_info()
+{
+    local lastline
+    lastline=$(tail -n1 "$LOG_DIR/watch_ss_client.log")
+    ss_mss=$(echo "$lastline"|extract_ss_info_field mss)
+    ss_reordering=$(echo "$lastline"|extract_ss_info_field reordering)
 }
 
 check_mss_lo()
 {
-    local mss
-    mss=$(read_last_ss_mss)
-    echo "check mss $mss decreases to lo mtu $MTU_VALUE_LO"
-    [[ $mss -lt $MTU_VALUE_LO ]]
+    local ss_mss ss_reordering
+    parse_current_ss_client_info
+    echo "check mss $ss_mss decreases to lo mtu $MTU_VALUE_LO curr reordering=${ss_reordering}"
+    [[ $ss_mss -lt $MTU_VALUE_LO ]]
 }
 
 check_mss_hi()
 {
-    local mss
-    mss=$(read_last_ss_mss)
-    echo "check mss $mss increases to hi mtu $MTU_VALUE_HI"
-    [[ $mss -gt $((MTU_VALUE_HI - 100)) ]]
+    local ss_mss ss_reordering
+    parse_current_ss_client_info
+    echo "check mss $ss_mss increases to hi mtu $MTU_VALUE_HI curr reordering=${ss_reordering}"
+    [[ $ss_mss -gt $((MTU_VALUE_HI - 100)) ]]
 }
 
 main()
