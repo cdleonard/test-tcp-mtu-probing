@@ -194,6 +194,13 @@ main()
     ip netns exec ns_client sysctl net.ipv4.tcp_mtu_probe_floor || true
     echo "/proc/sys/net/ipv4/route/mtu_expires: $(cat /proc/sys/net/ipv4/route/mtu_expires)"
 
+    if [[ -n $EXTRA_CLIENT_CMD ]]; then
+        ip netns exec ns_client sh -c "$EXTRA_CLIENT_CMD"
+    fi
+    if [[ -n $EXTRA_SERVER_CMD ]]; then
+        ip netns exec ns_client sh -c "$EXTRA_SERVER_CMD"
+    fi
+
     IPERF_SERVER_CMD=(
         iperf
         --server
