@@ -101,6 +101,8 @@ main()
     MTU_VALUE_LO=${MTU_VALUE_LO:-3000}
     # High value for MTU test
     MTU_VALUE_HI=${MTU_VALUE_HI:-9200}
+    # Use iperf3
+    IPERF_V3=${IPERF_V3:-0}
     # IPERF --bandwith argument
     IPERF_BANDWIDTH=${IPERF_BANDWIDTH:-1024k}
     IPERF_SERVER_BANDWIDTH=${IPERF_SERVER_BANDWIDTH:-$IPERF_BANDWIDTH}
@@ -119,12 +121,21 @@ main()
     local IPERF_CLIENT_ARGS=()
     local IPERF_SERVER_ARGS=()
 
+    # Executable for iperf (default iperf in path)
+    if [[ -z $IPERF_EXECUTABLE ]]; then
+        if [[ $IPERF_V3 == 1 ]]; then
+            IPERF_EXECUTABLE=iperf3
+        else
+            IPERF_EXECUTABLE=iperf
+        fi
+    fi
+
     [[ -n $IPERF_CLIENT_BANDWIDTH ]] && IPERF_CLIENT_ARGS+=(--bandwidth "$IPERF_CLIENT_BANDWIDTH")
-    [[ -n $IPERF_SERVER_BANDWIDTH ]] && IPERF_SERVER_ARGS+=(--bandwidth "$IPERF_SERVER_BANDWIDTH")
+    [[ $IPERF_V3 == 0 && -n $IPERF_SERVER_BANDWIDTH ]] && IPERF_SERVER_ARGS+=(--bandwidth "$IPERF_SERVER_BANDWIDTH")
     [[ -n $IPERF_CLIENT_WINDOW ]] && IPERF_CLIENT_ARGS+=(--window "$IPERF_CLIENT_WINDOW")
-    [[ -n $IPERF_SERVER_WINDOW ]] && IPERF_SERVER_ARGS+=(--window "$IPERF_SERVER_WINDOW")
+    [[ $IPERF_V3 == 0 && -n $IPERF_SERVER_WINDOW ]] && IPERF_SERVER_ARGS+=(--window "$IPERF_SERVER_WINDOW")
     [[ -n $IPERF_CLIENT_LEN ]] && IPERF_CLIENT_ARGS+=(--len "$IPERF_CLIENT_LEN")
-    [[ -n $IPERF_SERVER_LEN ]] && IPERF_SERVER_ARGS+=(--len "$IPERF_SERVER_LEN")
+    [[ $IPERF_V3 == 0 && -n $IPERF_SERVER_LEN ]] && IPERF_SERVER_ARGS+=(--len "$IPERF_SERVER_LEN")
 
     clean
     if [[ $CLEAN == 1 ]]; then
@@ -210,7 +221,7 @@ main()
     fi
 
     IPERF_SERVER_CMD=(
-        iperf
+        ${IPERF_EXECUTABLE}
         --server
         --bind 23.0.0.3
         "${IPERF_COMMON_ARGS[@]}"
@@ -222,10 +233,9 @@ main()
     sleep 1
 
     IPERF_CLIENT_CMD=(
-        iperf
+        ${IPERF_EXECUTABLE}
         --client 23.0.0.3
-        --time 1000000
-        --print_mss
+        --time 86400
         "${IPERF_COMMON_ARGS[@]}"
         "${IPERF_CLIENT_ARGS[@]}"
     )
