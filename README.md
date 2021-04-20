@@ -16,6 +16,8 @@ The test program can be configured through environment variables:
 * ``RUN_TCPDUMP``: Also capture (on both client and server, default 0)
 * ``EXTRA_CLIENT_CMD``: Extra shell command to run inside client namespace (via sh -c)
 * ``EXTRA_SERVER_CMD``: Extra shell command to run inside server namespace (via sh -c)
+* ``IPERF_V3``: Use iperf3 (args are slightly different)
+* ``IPERF_WINDOW``: iperf --window argument
 * ``IPERF_CLIENT_EXTRA_ARGS``: Extra args for iperf --client (will be split by shell)
 * ``IPERF_SERVER_EXTRA_ARGS``: Extra args for iperf --server (will be split by shell)
 * ``LOG_DIR``: Directory to save outputs. Default is temporary and only permanent result is stdio.
