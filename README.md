@@ -18,5 +18,7 @@ The test program can be configured through environment variables:
 * ``EXTRA_SERVER_CMD``: Extra shell command to run inside server namespace (via sh -c)
 * ``IPERF_CLIENT_EXTRA_ARGS``: Extra args for iperf --client (will be split by shell)
 * ``IPERF_SERVER_EXTRA_ARGS``: Extra args for iperf --server (will be split by shell)
+* ``LOG_DIR``: Directory to save outputs. Default is temporary and only permanent result is stdio.
+* ``CLEAN``: If set to zero skip cleanup, leaving processes and namespaces running
 
 This parameter list is incomplete.
