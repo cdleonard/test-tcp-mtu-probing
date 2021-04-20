@@ -90,11 +90,11 @@ main()
     # If set to 1 then run tcpdump (default 0)
     RUN_TCPDUMP=${RUN_TCPDUMP:-0}
     # If set to 1 then blackhole ICMPs
-    ICMP_BLACKHOLE=${ICMP_BLACKHOLE:-0}
+    ICMP_BLACKHOLE=${ICMP_BLACKHOLE:-1}
     # Override /proc/sys/net/ipv4/route/mtu_expires
     IPV4_MTU_EXPIRES=${IPV4_MTU_EXPIRES:-5}
     # Override sysctl net.ipv4.tcp_mtu_probing
-    TCP_MTU_PROBING=${TCP_MTU_PROBING:-}
+    TCP_MTU_PROBING=${TCP_MTU_PROBING:-1}
     # Override sysctl net.ipv4.tcp_probe_interval
     TCP_PROBE_INTERVAL=${TCP_MTU_PROBE_INTERVAL:-5}
     # Low value for MTU test
