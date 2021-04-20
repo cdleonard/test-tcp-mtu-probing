@@ -204,13 +204,21 @@ main()
     fi
 
     # Print relevant sysctls:
+    echo "client sysctl:"
     ip netns exec ns_client sysctl \
             net.ipv4.ip_no_pmtu_disc \
+            net.ipv4.tcp_max_reordering \
             net.ipv4.tcp_mtu_probing \
             net.ipv4.tcp_probe_interval \
-            net.ipv4.tcp_max_reordering \
-            net.ipv4.tcp_probe_threshold
+            net.ipv4.tcp_probe_threshold \
+            net.ipv4.tcp_rmem \
+            net.ipv4.tcp_wmem
     ip netns exec ns_client sysctl net.ipv4.tcp_mtu_probe_floor || true
+
+    echo "server sysctl:"
+    ip netns exec ns_server sysctl \
+            net.ipv4.tcp_rmem \
+            net.ipv4.tcp_wmem
     echo "/proc/sys/net/ipv4/route/mtu_expires: $(cat /proc/sys/net/ipv4/route/mtu_expires)"
 
     if [[ -n $EXTRA_CLIENT_CMD ]]; then
