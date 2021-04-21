@@ -1,0 +1,8 @@
+#! /bin/bash
+
+set -e
+topdir=$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd -P)
+export IPERF_V3=1
+export IPERF_BANDWITH=10M
+export IPERF_LEN=256k
+"$topdir/test-tcp-mtu-probing" "$@"
