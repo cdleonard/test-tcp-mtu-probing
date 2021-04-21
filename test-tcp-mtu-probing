@@ -125,6 +125,8 @@ main()
     if [[ -z $IPERF_EXECUTABLE ]]; then
         if [[ $IPERF_V3 == 1 ]]; then
             IPERF_EXECUTABLE=iperf3
+            # iperf3 overrides mss by itself by default
+            IPERF_CLIENT_ARGS+=(--set-mss 0)
         else
             IPERF_EXECUTABLE=iperf
         fi
