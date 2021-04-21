@@ -1,0 +1,10 @@
+#! /bin/bash
+#
+# Test expiration for tcp_probe_wait
+#
+
+topdir=$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd -P)
+
+export IPERF_WINDOW=256k
+export IPERF_LEN=8k
+"$topdir/test-tcp-mtu-probing" "$@"
