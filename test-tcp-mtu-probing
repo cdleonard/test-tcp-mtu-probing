@@ -63,13 +63,17 @@ parse_current_ss_client_info()
     lastline=$(tail -n1 "$LOG_DIR/watch_ss_client.log")
     ss_mss=$(echo "$lastline"|extract_ss_info_field mss)
     ss_reordering=$(echo "$lastline"|extract_ss_info_field reordering)
+    ss_cwnd=$(echo "$lastline"|extract_ss_info_field cwnd)
+    ss_ssthresh=$(echo "$lastline"|extract_ss_info_field ssthresh)
+
+    echo "dump mss=$ss_mss reordering=${ss_reordering} cwnd=$ss_cwnd ssthresh=$ss_ssthresh"
 }
 
 check_mss_lo()
 {
     local ss_mss ss_reordering
     parse_current_ss_client_info
-    echo "check mss $ss_mss decreases to lo mtu $MTU_VALUE_LO curr reordering=${ss_reordering}"
+    echo "wait mss $ss_mss decreases to lo mtu $MTU_VALUE_LO"
     [[ $ss_mss -lt $MTU_VALUE_LO ]]
 }
 
@@ -77,7 +81,7 @@ check_mss_hi()
 {
     local ss_mss ss_reordering
     parse_current_ss_client_info
-    echo "check mss $ss_mss increases to hi mtu $MTU_VALUE_HI curr reordering=${ss_reordering}"
+    echo "wait mss $ss_mss increases to hi mtu $MTU_VALUE_HI"
     [[ $ss_mss -gt $((MTU_VALUE_HI - 100)) ]]
 }
 
