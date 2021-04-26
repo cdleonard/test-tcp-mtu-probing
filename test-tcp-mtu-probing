@@ -93,6 +93,8 @@ main()
     TIMEOUT_SEC=${TIMEOUT_SEC:-30}
     # If set to 1 then run tcpdump (default 0)
     RUN_TCPDUMP=${RUN_TCPDUMP:-0}
+    # If set to 1 then run ping before real iperf traffic
+    RUN_PING=${RUN_PING:-0}
     # If set to 1 then blackhole ICMPs
     ICMP_BLACKHOLE=${ICMP_BLACKHOLE:-1}
     # Override /proc/sys/net/ipv4/route/mtu_expires
@@ -191,7 +193,7 @@ main()
         tcpdump_server_pid=$!
     fi
 
-    if false; then
+    if [[ $RUN_PING == 1 ]]; then
         if ip netns exec ns_client ping -c3 23.0.0.3; then
             echo "ok - can ping from client to server"
         else

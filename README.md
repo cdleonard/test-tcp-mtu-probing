@@ -14,6 +14,7 @@ The test program can be configured through environment variables:
 * ``ICMP_BLACKHOLE``: Drop all icmps in order to test tcp-level ptmu discovery (default 1 because that's the point)
 * ``TCP_MTU_PROBING``: Override net.ipv4.tcp_mtu_probing (default 1 so feature is turned on when loss is detected)
 * ``RUN_TCPDUMP``: Also capture (on both client and server, default 0)
+* ``RUN_PING``: Also run ping once before iperf
 * ``EXTRA_CLIENT_CMD``: Extra shell command to run inside client namespace (via sh -c)
 * ``EXTRA_SERVER_CMD``: Extra shell command to run inside server namespace (via sh -c)
 * ``IPERF_V3``: Use iperf3 (args are slightly different)
