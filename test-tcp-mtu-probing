@@ -186,6 +186,11 @@ main()
         ip netns exec ns_middle iptables -A OUTPUT -p icmp -j REJECT
     fi
 
+    if [[ $MIDDLE_DELAY ]]; then
+        ip netns exec ns_middle tc qdisc add dev veth_client root netem delay "$MIDDLE_DELAY"
+        ip netns exec ns_middle tc qdisc add dev veth_server root netem delay "$MIDDLE_DELAY"
+    fi
+
     if [[ $RUN_TCPDUMP == 1 ]]; then
         ip netns exec ns_client tcpdump -vvn -i veth_middle -w "$LOG_DIR/capture_client.pcap" &
         tcpdump_client_pid=$!
