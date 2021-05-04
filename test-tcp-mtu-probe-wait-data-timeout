@@ -5,12 +5,13 @@
 
 topdir=$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd -P)
 
-# --pacing-timer is 200ms and tcp_probe_wait is 100ms
-# Pending buffers should get flushed every single time and no probes should be sent
-# tcpdump should show 32kb bursts every 200ms
+# ipref3 --length 8k --bitrate 1280k --pacing-timer 200000
+# This should send 32k bursts every 200ms, not enough for a probe to ever accumulate
 export IPERF_V3=1
 export IPERF_CLIENT_EXTRA_ARGS="--length 8k --bitrate 1280k --pacing-timer 200000"
-export EXTRA_CLIENT_CMD="sysctl -w net.ipv4.tcp_probe_wait=100"
+if [[ -f /proc/sys/net/ipv4/tcp_probe_wait ]]; then
+    export EXTRA_CLIENT_CMD="sysctl -w net.ipv4.tcp_probe_wait=100;$EXTRA_CLIENT_CMD"
+fi
 if "$topdir/test-tcp-mtu-probing" "$@"; then
     echo "not ok - should have failed"
     exit 1
