@@ -101,6 +101,8 @@ main()
     IPV4_MTU_EXPIRES=${IPV4_MTU_EXPIRES:-5}
     # Override sysctl net.ipv4.tcp_mtu_probing
     TCP_MTU_PROBING=${TCP_MTU_PROBING:-1}
+    # If set to only only test rise. This is only useful if TCP_MTU_PROBING=2
+    TEST_RISE_ONLY=${TEST_RISE_ONLY:-0}
     # Override sysctl net.ipv4.tcp_probe_interval
     TCP_PROBE_INTERVAL=${TCP_PROBE_INTERVAL:-5}
     # Low value for MTU test
@@ -290,6 +292,10 @@ main()
         exit 1
     fi
 
+    if [[ $TEST_RISE_ONLY == 1 ]]; then
+        echo "ok - only testing rise"
+        exit 0
+    fi
     echo "enter lo-mtu state"
     ip netns exec ns_middle ip link set veth_server mtu "$MTU_VALUE_LO"
 
