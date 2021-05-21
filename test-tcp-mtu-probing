@@ -1,4 +1,6 @@
 #! /bin/bash -e
+#
+# shellcheck disable=SC2034
 
 clean_netns()
 {
@@ -251,6 +253,7 @@ main()
         ip netns exec ns_client sh -c "$EXTRA_SERVER_CMD"
     fi
 
+    # shellcheck disable=SC2206
     IPERF_SERVER_CMD=(
         ${IPERF_EXECUTABLE}
         --server
@@ -264,6 +267,7 @@ main()
     iperf_server_pid=$!
     sleep 1
 
+    # shellcheck disable=SC2206
     IPERF_CLIENT_CMD=(
         ${IPERF_EXECUTABLE}
         --client 23.0.0.3
