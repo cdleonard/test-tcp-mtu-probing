@@ -87,6 +87,16 @@ check_mss_hi()
     [[ $ss_mss -gt $((MTU_VALUE_HI - 100)) ]]
 }
 
+ping_client_to_server_with_size()
+{
+    ip netns exec ns_client ping -c1 -w1 23.0.0.3 -s "$1"
+}
+
+ping_server_to_client_with_size()
+{
+    ip netns exec ns_server ping -c1 -w1 12.0.0.1 -s "$1"
+}
+
 main()
 {
     # Can be set externally:
@@ -203,10 +213,15 @@ main()
     fi
 
     if [[ $RUN_PING == 1 ]]; then
-        if ip netns exec ns_client ping -c3 23.0.0.3; then
+        if ping_client_to_server_with_size $((MTU_VALUE_HI - 100)); then
             echo "ok - can ping from client to server"
         else
             echo "not ok - fail to ping from client to server"
+        fi
+        if ping_server_to_client_with_size $((MTU_VALUE_HI - 100)); then
+            echo "ok - can ping from server to client"
+        else
+            echo "not ok - fail to ping from server to client"
         fi
     fi
 
@@ -308,6 +323,21 @@ main()
     else
         echo "not ok - failed to reach lo mss"
         exit 1
+    fi
+
+    if [[ $RUN_PING == 1 ]]; then
+        if ping_client_to_server_with_size $((MTU_VALUE_LO + 100)); then
+            echo "not ok - client to server ping works with mtu > low"
+        else
+            echo "ok - client to server ping fails with mtu > low"
+        fi
+        if ping_server_to_client_with_size $((MTU_VALUE_LO + 100)); then
+            echo "not ok - server to client ping works with mtu > low"
+            exit 1
+        else
+            echo "ok - server to client ping fails with mtu > low"
+            exit 0
+        fi
     fi
 
     echo "restore hi-mtu state:"
