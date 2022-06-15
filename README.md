@@ -7,6 +7,11 @@ Main entry point is [test-tcp-mtu-probing](test-tcp-mtu-probing). This test
 works by creating three namespaces linked by veth pairs, dropping ICMP in the
 middle namespace and then running iperf between the client and server.
 
+At the start all namespaces are set to allow the "himtu", then the middle
+namespace decrease MTU to "lomtu" and waits for TCP mss to decrease. Afterwards
+the MTU is increased again and mtu probing should reach an MSS close to the
+himtu value.
+
 Smaller scripts test specific scenarios:
 * [test-long-writes](test-long-writes): Test with 256k writes and 256k window
 * [test-tiny-writes](test-tiny-writes): Test with 8k writes and 256k window
