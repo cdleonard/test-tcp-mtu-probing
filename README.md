@@ -1,10 +1,20 @@
 # Test linux rfc4821 TCP Path MTU Discovery
 
-Main entry point is [test-tcp-mtu-probing](test-tcp-mtu-probing).
+In theory enabling tcp_mtu_probing should make MSS increase close to the MTU
+value but this depends on actual traffic conditions.
 
-It has minimal requirements: bash iperf iproute2 ethtool
+Main entry point is [test-tcp-mtu-probing](test-tcp-mtu-probing). This test
+works by creating three namespaces linked by veth pairs, dropping ICMP in the
+middle namespace and then running iperf between the client and server.
 
-Kernel requires network namespaces, iptables, veth
+Smaller scripts test specific scenarios:
+* [test-long-writes](test-long-writes): Test with 256k writes and 256k window
+* [test-tiny-writes](test-tiny-writes): Test with 8k writes and 256k window
+
+Userspace requirements are minimal: bash iperf iperf3 iproute2 ethtool. For
+debian-based distros they are listed in [apt-requirements.txt](apt-requirements.txt).
+
+Kernel requirements are also minimal: network namespaces, iptables, veth
 
 ## Parameters
 
@@ -26,4 +36,4 @@ The test program can be configured through environment variables:
 * ``LOG_DIR``: Directory to save outputs. Default is temporary and only permanent result is stdio.
 * ``CLEAN``: If set to zero skip cleanup, leaving processes and namespaces running
 
-This parameter list is incomplete.
+This parameter list not entirely complete.
